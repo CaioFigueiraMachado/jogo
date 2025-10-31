@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Tecnologias da Informação</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ec 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #2d3748;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .game-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .difficulty-btn {
+            padding: 10px 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: #f8fafc;
+            color: #4a5568;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .difficulty-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .easy.active {
+            background-color: #48bb78;
+            color: white;
+            border-color: #48bb78;
+        }
+
+        .medium.active {
+            background-color: #ed8936;
+            color: white;
+            border-color: #ed8936;
+        }
+
+        .hard.active {
+            background-color: #f56565;
+            color: white;
+            border-color: #f56565;
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #f8fafc;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            color: #2d3748;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .items-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            padding: 25px;
+            background: #ffffff;
+            border-radius: 16px;
+            min-height: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: grab;
+            user-select: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .item.dragging {
+            opacity: 0.7;
+            transform: scale(0.98);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .item.correct {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            cursor: default;
+            transform: scale(0.95);
+        }
+
+        .item.incorrect {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .categories-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .category {
+            background: #ffffff;
+            border: 2px dashed #cbd5e0;
+            border-radius: 16px;
+            padding: 25px;
+            min-height: 150px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .category h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .category.correct {
+            background: rgba(72, 187, 120, 0.1);
+            border-color: #48bb78;
+            border-style: solid;
+        }
+
+        .category.incorrect {
+            background: rgba(245, 101, 101, 0.1);
+            border-color: #f56565;
+            border-style: solid;
+        }
+
+        .category.highlight {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+            border-style: solid;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .instructions p {
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .game-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .difficulty-selector {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Jogo de Tecnologias da Informação</h1>
+            <p class="subtitle">Arraste cada tecnologia para a categoria correta</p>
+        </header>
+
+        <div class="game-controls">
+            <div class="difficulty-selector">
+                <button class="difficulty-btn easy" data-level="easy">Fácil</button>
+                <button class="difficulty-btn medium active" data-level="medium">Médio</button>
+                <button class="difficulty-btn hard" data-level="hard">Difícil</button>
+            </div>
+            <div class="score-display">
+                Pontuação: <span id="score">100</span>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <div class="items-container" id="items-container">
+                <!-- Itens serão gerados dinamicamente -->
+            </div>
+            <div class="categories-container">
+                <div class="category" data-category="linguagens">
+                    <h3>Linguagens de Programação</h3>
+                </div>
+                <div class="category" data-category="frameworks">
+                    <h3>Frameworks / Bibliotecas</h3>
+                </div>
+                <div class="category" data-category="bd-relacional">
+                    <h3>Banco de Dados Relacional</h3>
+                </div>
+                <div class="category" data-category="bd-nao-relacional">
+                    <h3>Banco de Dados Não Relacional</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <p>Arraste cada tecnologia para a categoria correta.</p>
+            <p>Você começa com 100 pontos e perde 5 pontos a cada erro.</p>
+        </div>
+
+        <footer>
+            <p>Desenvolvido para praticar conhecimentos em TI</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Dados das tecnologias por categoria
+        const technologies = {
+            linguagens: [
+                "JavaScript", "Python", "Java", "C#", "PHP", "Ruby", "Go", "Swift", 
+                "Kotlin", "Rust", "TypeScript", "C++", "Scala", "Perl", "R"
+            ],
+            frameworks: [
+                "React", "Angular", "Vue.js", "Django", "Spring", "Laravel", "Express.js",
+                "Ruby on Rails", "Flask", "ASP.NET", "jQuery", "Bootstrap", "Svelte", 
+                "Next.js", "Nuxt.js"
+            ],
+            "bd-relacional": [
+                "MySQL", "PostgreSQL", "Oracle", "SQL Server", "SQLite", "MariaDB",
+                "DB2", "Firebird", "Amazon RDS", "CockroachDB"
+            ],
+            "bd-nao-relacional": [
+                "MongoDB", "Redis", "Cassandra", "Couchbase", "DynamoDB", "Firebase",
+                "Neo4j", "Elasticsearch", "Cosmos DB", "RavenDB"
+            ]
+        };
+
+        // Variáveis do jogo
+        let score = 100;
+        let currentLevel = 'medium';
+        let items = [];
+        let draggedItem = null;
+        let correctItems = 0;
+        let totalItems = 0;
+
+        // Elementos DOM
+        const itemsContainer = document.getElementById('items-container');
+        const scoreDisplay = document.getElementById('score');
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        const categories = document.querySelectorAll('.category');
+
+        // Criar sons programaticamente para evitar problemas de base64
+        function createSound(frequency, duration, type) {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + duration);
+            } catch (e) {
+                console.log("Áudio não suportado");
+            }
+        }
+
+        // Inicializar o jogo
+        function initGame() {
+            resetGame();
+            generateItems();
+            setupEventListeners();
+        }
+
+        // Resetar o jogo
+        function resetGame() {
+            score = 100;
+            correctItems = 0;
+            scoreDisplay.textContent = score;
+            itemsContainer.innerHTML = '';
+            categories.forEach(category => {
+                category.classList.remove('correct', 'incorrect');
+                // Preservar o título da categoria
+                const title = category.querySelector('h3').textContent;
+                category.innerHTML = `<h3>${title}</h3>`;
+            });
+            
+            // Atualizar estado dos botões de dificuldade
+            difficultyButtons.forEach(btn => {
+                if (btn.dataset.level === currentLevel) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Gerar itens baseado no nível de dificuldade
+        function generateItems() {
+            items = [];
+            
+            // Determinar quantos itens por categoria baseado na dificuldade
+            let itemsPerCategory;
+            switch(currentLevel) {
+                case 'easy':
+                    itemsPerCategory = 3;
+                    break;
+                case 'medium':
+                    itemsPerCategory = 5;
+                    break;
+                case 'hard':
+                    itemsPerCategory = 7;
+                    break;
+                default:
+                    itemsPerCategory = 5;
+            }
+            
+            // Selecionar itens aleatórios de cada categoria
+            Object.keys(technologies).forEach(category => {
+                const shuffled = [...technologies[category]].sort(() => 0.5 - Math.random());
+                const selected = shuffled.slice(0, itemsPerCategory);
+                
+                selected.forEach(tech => {
+                    items.push({
+                        name: tech,
+                        category: category
+                    });
+                });
+            });
+            
+            // Embaralhar todos os itens
+            items.sort(() => 0.5 - Math.random());
+            totalItems = items.length;
+            
+            // Criar elementos DOM para os itens
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.textContent = item.name;
+                itemElement.draggable = true;
+                itemElement.dataset.category = item.category;
+                
+                itemsContainer.appendChild(itemElement);
+            });
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Remover event listeners antigos para evitar duplicação
+            document.querySelectorAll('.item').forEach(item => {
+                item.replaceWith(item.cloneNode(true));
+            });
+            
+            // Eventos de drag para os itens
+            document.querySelectorAll('.item').forEach(item => {
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Eventos de drag para as categorias
+            categories.forEach(category => {
+                category.addEventListener('dragover', handleDragOver);
+                category.addEventListener('dragenter', handleDragEnter);
+                category.addEventListener('dragleave', handleDragLeave);
+                category.addEventListener('drop', handleDrop);
+            });
+
+            // Eventos para os botões de dificuldade
+            difficultyButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    currentLevel = button.dataset.level;
+                    resetGame();
+                    generateItems();
+                    setupEventListeners();
+                });
+            });
+        }
+
+        // Handlers de eventos de drag
+        function handleDragStart(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.textContent);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            categories.forEach(category => category.classList.remove('highlight'));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            this.classList.add('highlight');
+        }
+
+        function handleDragLeave() {
+            this.classList.remove('highlight');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('highlight');
+            
+            if (!draggedItem) return;
+            
+            const itemCategory = draggedItem.dataset.category;
+            const targetCategory = this.dataset.category;
+            
+            // Verificar se o item foi colocado na categoria correta
+            if (itemCategory === targetCategory) {
+                // Acerto
+                this.classList.add('correct');
+                draggedItem.classList.add('correct');
+                
+                // Tocar som de acerto
+                createSound(800, 0.2, 'sine');
+                
+                // Mover o item para a categoria
+                this.appendChild(draggedItem);
+                draggedItem.style.cursor = 'default';
+                draggedItem.draggable = false;
+                
+                // Incrementar contador de acertos
+                correctItems++;
+                
+                // Remover classes de feedback após um tempo
+                setTimeout(() => {
+                    this.classList.remove('correct');
+                }, 1000);
+                
+                // Verificar se o jogo terminou
+                checkGameCompletion();
+            } else {
+                // Erro
+                this.classList.add('incorrect');
+                draggedItem.classList.add('incorrect');
+                
+                // Tocar som de erro
+                createSound(300, 0.3, 'sawtooth');
+                
+                // Reduzir pontuação
+                score = Math.max(0, score - 5);
+                scoreDisplay.textContent = score;
+                
+                // Remover classes de feedback após um tempo
+                setTimeout(() => {
+                    this.classList.remove('incorrect');
+                    draggedItem.classList.remove('incorrect');
+                }, 1000);
+            }
+            
+            draggedItem = null;
+        }
+
+        // Verificar se o jogo foi completado
+        function checkGameCompletion() {
+            if (correctItems === totalItems) {
+                // Jogo completado
+                setTimeout(() => {
+                    let message;
+                    let icon;
+                    
+                    if (score >= 90) {
+                        message = "Excelente! Você é um expert em TI!";
+                        icon = 'success';
+                    } else if (score >= 70) {
+                        message = "Muito bom! Você conhece bem as tecnologias!";
+                        icon = 'success';
+                    } else if (score >= 50) {
+                        message = "Bom trabalho! Continue estudando!";
+                        icon = 'info';
+                    } else {
+                        message = "Continue praticando para melhorar seu conhecimento!";
+                        icon = 'warning';
+                    }
+                    
+                    Swal.fire({
+                        title: 'Parabéns!',
+                        html: `Você completou o desafio com <strong>${score}</strong> pontos!<br><br>${message}`,
+                        icon: icon,
+                        confirmButtonText: 'Jogar Novamente',
+                        confirmButtonColor: '#667eea',
+                        allowOutsideClick: false,
+                        background: '#ffffff',
+                        color: '#2d3748'
+                    }).then(() => {
+                        resetGame();
+                        generateItems();
+                        setupEventListeners();
+                    });
+                }, 800);
+            }
+        }
+
+        // Iniciar o jogo quando a página carregar
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
